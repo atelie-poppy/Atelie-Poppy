@@ -1,0 +1,305 @@
+import { useMemo, useState } from "react";
+
+export default function AteliePoppyShop() {
+  const [categoria, setCategoria] = useState("todos");
+  const [carrinho, setCarrinho] = useState([]);
+  const [modalCheckout, setModalCheckout] = useState(false);
+
+  const [nomeCliente, setNomeCliente] = useState("");
+  const [emailCliente, setEmailCliente] = useState("");
+
+  // 🔐 ADMIN
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [senha, setSenha] = useState("");
+
+  const PIX_KEY = "046.095.265-06";
+  const INFINITEPAY_LINK = "https://seu-link-infinitepay-aqui";
+  const WHATSAPP_NUMBER = "5511983273805";
+
+  // 📦 PRODUTOS
+  const [produtos, setProdutos] = useState([
+    {
+      id: 1,
+      nome: "Kit Mini",
+      preco: 149.9,
+      tipo: "kit",
+      descricao: "Até 10 pessoas - personalizado nome e idade",
+      imagem: "https://via.placeholder.com/300"
+    },
+    {
+      id: 2,
+      nome: "Kit P",
+      preco: 229.9,
+      tipo: "kit",
+      descricao: "Até 20 pessoas - personalizado nome e idade",
+      imagem: "https://via.placeholder.com/300"
+    },
+    {
+      id: 3,
+      nome: "Kit M",
+      preco: 349.9,
+      tipo: "kit",
+      descricao: "Até 30 pessoas - personalizado nome e idade",
+      imagem: "https://via.placeholder.com/300"
+    },
+    {
+      id: 4,
+      nome: "Kit Digital",
+      preco: 80,
+      tipo: "digital",
+      descricao: "Arquivos enviados no WhatsApp",
+      imagem: "https://via.placeholder.com/300"
+    }
+  ]);
+
+  // ➕ NOVO PRODUTO (ADMIN)
+  const [novoNome, setNovoNome] = useState("");
+  const [novoPreco, setNovoPreco] = useState("");
+  const [novoTipo, setNovoTipo] = useState("kit");
+
+  const filtrados =
+    categoria === "todos"
+      ? produtos
+      : produtos.filter(p => p.tipo === categoria);
+
+  const total = useMemo(() => {
+    return carrinho.reduce((acc, i) => acc + i.preco, 0);
+  }, [carrinho]);
+
+  function addCarrinho(item) {
+    setCarrinho([...carrinho, item]);
+  }
+
+  function whatsappMsg() {
+    const lista = carrinho.map(i => `• ${i.nome} - R$${i.preco}`).join("%0A");
+
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=Olá! Meu nome é ${nomeCliente}%0AEmail: ${emailCliente}%0A%0AQuero comprar:%0A${lista}%0A%0ATotal: R$${total.toFixed(2)}`;
+  }
+
+  // 🔐 LOGIN ADMIN
+  function loginAdmin() {
+    if (senha === "poppy123") {
+      setIsAdmin(true);
+    } else {
+      alert("Senha incorreta");
+    }
+  }
+
+  // ➕ ADICIONAR PRODUTO
+  function addProduto() {
+    const novo = {
+      id: Date.now(),
+      nome: novoNome,
+      preco: Number(novoPreco),
+      tipo: novoTipo,
+      descricao: "Produto adicionado pelo admin",
+      imagem: "https://via.placeholder.com/300"
+    };
+
+    setProdutos([...produtos, novo]);
+    setNovoNome("");
+    setNovoPreco("");
+  }
+
+  return (
+    <div className="min-h-screen bg-pink-50">
+
+      {/* HEADER */}
+      <div className="bg-white p-4 text-center shadow">
+        <h1 className="text-2xl font-bold text-pink-500">
+          🎀 Ateliê Poppy
+        </h1>
+
+        <p className="text-sm text-gray-500">
+          papelaria afetiva
+        </p>
+      </div>
+
+      {/* CLIENTE INFO */}
+      <div className="p-3 bg-white space-y-2">
+        <input
+          placeholder="Seu nome"
+          value={nomeCliente}
+          onChange={(e) => setNomeCliente(e.target.value)}
+          className="border p-2 w-full rounded"
+        />
+
+        <input
+          placeholder="WhatsApp ou email"
+          value={emailCliente}
+          onChange={(e) => setEmailCliente(e.target.value)}
+          className="border p-2 w-full rounded"
+        />
+      </div>
+
+      {/* CATEGORIAS */}
+      <div className="flex gap-2 overflow-x-auto p-3 bg-white">
+        {["todos", "kit", "digital"].map(cat => (
+          <button
+            key={cat}
+            onClick={() => setCategoria(cat)}
+            className="px-3 py-1 border rounded-full"
+          >
+            {cat.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      {/* PRODUTOS */}
+      <div className="grid grid-cols-2 gap-3 p-3">
+        {filtrados.map(p => (
+          <div key={p.id} className="bg-white p-2 rounded-xl shadow">
+
+            <img src={p.imagem} className="rounded-xl mb-2" />
+
+            <h2 className="font-bold text-pink-600">
+              {p.nome}
+            </h2>
+
+            <p className="text-xs text-gray-500">
+              {p.descricao}
+            </p>
+
+            <p className="font-bold">
+              R$ {p.preco.toFixed(2)}
+            </p>
+
+            <button
+              onClick={() => addCarrinho(p)}
+              className="w-full bg-pink-500 text-white mt-2 py-1 rounded"
+            >
+              Adicionar
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* DO ZERO COMIGO */}
+      <div className="m-3 p-4 bg-yellow-100 rounded-xl text-center">
+        <h3 className="font-bold">
+          👑 Não achou seu tema?
+        </h3>
+
+        <p className="text-sm">
+          Criamos do zero com você
+        </p>
+
+        <p className="font-bold mt-1">
+          R$ 200,00
+        </p>
+
+        <a
+          href={`https://wa.me/${WHATSAPP_NUMBER}?text=Quero um kit do zero`}
+          className="inline-block mt-2 bg-yellow-500 text-white px-4 py-2 rounded-full"
+        >
+          Criar do zero comigo
+        </a>
+      </div>
+
+      {/* CARRINHO */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white p-3 shadow-xl">
+
+        <p>
+          🛒 {carrinho.length} itens | Total: R$ {total.toFixed(2)}
+        </p>
+
+        <button
+          onClick={() => setModalCheckout(true)}
+          className="bg-green-500 text-white w-full py-2 mt-2 rounded"
+        >
+          Finalizar Pedido
+        </button>
+      </div>
+
+      {/* CHECKOUT */}
+      {modalCheckout && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+
+          <div className="bg-white p-4 rounded-xl w-full max-w-md">
+
+            <h2 className="font-bold mb-2">
+              Finalizar Pedido
+            </h2>
+
+            {/* PIX */}
+            <div className="bg-gray-100 p-2 rounded mb-2">
+              <p className="font-bold">PIX</p>
+              <p className="text-sm break-all">{PIX_KEY}</p>
+            </div>
+
+            {/* CARTÃO */}
+            <a
+              href={INFINITEPAY_LINK}
+              target="_blank"
+              className="block bg-blue-500 text-white text-center py-2 rounded mb-2"
+            >
+              Pagar no cartão
+            </a>
+
+            {/* WHATSAPP */}
+            <a
+              href={whatsappMsg()}
+              target="_blank"
+              className="block bg-green-500 text-white text-center py-2 rounded"
+            >
+              Confirmar no WhatsApp
+            </a>
+
+            <button
+              onClick={() => setModalCheckout(false)}
+              className="w-full mt-2 bg-gray-300 py-2 rounded"
+            >
+              Fechar
+            </button>
+
+          </div>
+        </div>
+      )}
+
+      {/* ADMIN */}
+      {!isAdmin && (
+        <div className="p-4 text-center text-xs text-gray-400">
+          <button onClick={loginAdmin} className="underline">
+            ⚙️ Admin
+          </button>
+
+          <input
+            type="password"
+            placeholder="senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            className="border p-1 ml-2"
+          />
+        </div>
+      )}
+
+      {isAdmin && (
+        <div className="p-3 bg-white m-3 rounded shadow">
+          <h3 className="font-bold mb-2">Modo Admin</h3>
+
+          <input
+            placeholder="Nome produto"
+            value={novoNome}
+            onChange={(e) => setNovoNome(e.target.value)}
+            className="border p-2 w-full mb-2"
+          />
+
+          <input
+            placeholder="Preço"
+            value={novoPreco}
+            onChange={(e) => setNovoPreco(e.target.value)}
+            className="border p-2 w-full mb-2"
+          />
+
+          <button
+            onClick={addProduto}
+            className="bg-black text-white w-full py-2"
+          >
+            Adicionar produto
+          </button>
+        </div>
+      )}
+
+    </div>
+  );
+}
